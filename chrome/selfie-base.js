@@ -86,12 +86,15 @@ function GitHubSelfieVideoPreview() {
     ' Video' +
     '</button>' +
     '</div>' +
-    '<select class="selfieDuration">' +
-    '<option>1</option>' +
-    '<option>2</option>' +
-    '<option>3</option>' +
-    '<option>4</option>' +
+    '<div class="selfieDuration">' +
+    'Duration: ' +
+    '<select>' +
+    '<option value=1>1s</option>' +
+    '<option value=2>2s</option>' +
+    '<option value=3>3s</option>' +
+    '<option value=4>4s</option>' +
     '</select>' +
+    '</div>' +
     '<button type="button" class="selfieTakeButton btn btn-primary btn-sm">' +
     ' Take a selfie!' +
     '</button>' +
@@ -238,7 +241,7 @@ GitHubSelfieVideoPreview.prototype = {
     getUserMedia({video: true}, (_stream) => {
       this.setMessage('');
       this.stream = _stream;
-      this.videoElem.src = window.URL.createObjectURL(_stream);
+      this.videoElem.srcObject = _stream;
     }, (e) => {
       this.setMessage("You don't have a camera available!");
     });
@@ -366,6 +369,8 @@ GitHubSelfies.prototype = {
       //ctx.scale(-1, 1);
       ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, video.videoWidth, video.videoHeight);
       imgBinary = canvas.toDataURL('/image/jpeg', 1).split(',')[1];
+      // Hack, canvas is initially hidden before any pictures are taken
+      $(canvas).removeClass('hidden');
       ctx.restore();
       callback(imgBinary);
     };
@@ -437,6 +442,8 @@ GitHubSelfies.prototype = {
           frames.push([ctx.getImageData(0, 0, width, height).data, frameDelay]);
           this.buttons.videoPreview.setProgress(frameNum / totalFrames);
           if (frameNum >= totalFrames) {
+            // Hack, canvas is initially hidden before any pictures are taken
+            $(canvas).removeClass('hidden');
             cancelAnimationFrame(rafRequest);
             makeGif().then(() => this.buttons.videoPreview.setProgress(0));
           }
